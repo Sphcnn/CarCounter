@@ -9,20 +9,7 @@ import math
 from sort import*
 
 cap = cv2.VideoCapture("trafik_yolo.mp4") 
-cap.set(4, 720)
-
-
-model = YOLO("yolov8n.pt") 
-
-mask = cv2.imread("mask.png") 
-
-#Tracking
-tracker = Sort(max_age= 20, min_hits=3 , iou_threshold=0.3)
-
-limits= [400,297,673,297]#limits aim to create a line in order to count vehicles
-totalCount = []
-
-
+model = YOLO("yolov8l.pt") 
 
 
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
@@ -38,6 +25,14 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
              ]
 
 
+mask = cv2.imread("mask2.png") 
+
+#Tracking
+tracker = Sort(max_age= 20, min_hits=3 , iou_threshold=0.3)
+
+limits= [400,297,673,297]#limits aim to create a line in order to count vehicles
+totalCount = []
+
 
 
 while True:
@@ -48,15 +43,12 @@ while True:
         mask = cv2.resize(mask, (img.shape[1], img.shape[0]))
     
     imgRegion = cv2.bitwise_and(img, mask)
-    
-    counterImage = cv2.imread("Mcqueen.png",cv2.IMREAD_UNCHANGED)
-    img = cvzone.overlayPNG(img, counterImage,(0,0))
-    
-    
-    
-    results = model(img, stream=True)
+    imgGraphics = cv2.imread("Mcqueen.png", cv2.IMREAD_UNCHANGED)
+    img = cvzone.overlayPNG(img, imgGraphics, (0, 0))
+    results = model(imgRegion, stream=True)
+ 
     detections = np.empty((0, 5))
-    
+
     for r in results:
         boxes = r.boxes
         for box in boxes:
@@ -110,7 +102,7 @@ while True:
     #cvzone.putTextRect(img, f' Count:  {len(totalCount)}',(30,30))        
     cv2.putText(img,str(len(totalCount)),(255,100),cv2.FONT_HERSHEY_PLAIN,5,(50,50,255),8)
     cv2.imshow("Img", img)
-   # cv2.imshow("ImageRegion", imgRegion)
+    cv2.imshow("ImageRegion", imgRegion)
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
